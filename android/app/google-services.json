@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "574042476018",
+    "firebase_url": "https://ummah-61e06-default-rtdb.firebaseio.com",
+    "project_id": "ummah-61e06",
+    "storage_bucket": "ummah-61e06.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:574042476018:android:cd4c659e0dbae03c58af6b",
+        "android_client_info": {
+          "package_name": "com.example.mosque_finder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATg2s7XJUtVf-yXL8bepRy8BXAENomFgM"
+        },
+        {
+          "current_key": "AIzaSyDhHlFxA5bOORed-0rdBgCRWgZ669ATW7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:574042476018:android:928971425890ea8958af6b",
+        "android_client_info": {
+          "package_name": "com.example.ummha"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATg2s7XJUtVf-yXL8bepRy8BXAENomFgM"
+        },
+        {
+          "current_key": "AIzaSyDhHlFxA5bOORed-0rdBgCRWgZ669ATW7A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

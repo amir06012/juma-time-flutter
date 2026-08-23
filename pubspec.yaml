@@ -1,0 +1,61 @@
+name: mosque_finder
+description: Nearby mosques with Jummah times and Qibla direction.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.1
+
+  # Firebase
+  firebase_core: ^3.15.2
+  cloud_firestore: ^5.2.0
+  firebase_auth: ^5.1.0
+  firebase_database: ^11.3.10
+
+  # Location + permissions
+  geolocator: ^13.0.1
+  permission_handler: ^11.3.1
+
+  # Internet connectivity checks
+  connectivity_plus: ^6.0.5
+
+  # Networking (Places API + prayer times API)
+  http: ^1.2.2
+
+  # Open Google Maps for directions
+  url_launcher: ^6.3.0
+
+  # Device compass for Qibla direction
+  flutter_compass: ^0.8.0
+  hijri: ^3.0.1
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+# Regenerated with `dart run flutter_launcher_icons` from the artwork built
+# by tool/generate_icon.dart (mosque silhouette + watch face, mehndiGreen +
+# gold - the app's own brand colors).
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#5E7A42"
+  adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"

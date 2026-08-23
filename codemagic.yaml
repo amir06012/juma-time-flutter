@@ -1,0 +1,53 @@
+workflows:
+  # Builds the iOS app on Codemagic's macOS machines - no Mac needed on your
+  # end. This workflow is deliberately UNSIGNED (--no-codesign): it proves
+  # the Flutter/iOS build actually compiles (CocoaPods, plugins, etc.) and
+  # produces an .app artifact you can download and inspect, but an unsigned
+  # .app cannot be installed on a real iPhone or submitted anywhere - iOS
+  # requires every app to be signed with an Apple Developer identity before
+  # it can run on real hardware.
+  #
+  # Once you have an Apple Developer account ($99/yr, developer.apple.com),
+  # come back and:
+  #   1. In the Codemagic dashboard, add your App Store Connect API key
+  #      under Team settings > Integrations - Codemagic can then generate
+  #      signing certificates/profiles automatically, no manual export
+  #      needed.
+  #   2. Change PRODUCT_BUNDLE_IDENTIFIER in ios/Runner.xcodeproj from the
+  #      placeholder `com.example.mosqueFinder` to a real reverse-DNS id you
+  #      own, and register that same id + your app in App Store Connect.
+  #   3. Swap the build step below for `flutter build ipa
+  #      --export-options-plist=/Users/builder/export_options.plist` (or use
+  #      Codemagic's `ios_signing` block, which generates that plist for
+  #      you) and add a `publishing: app_store_connect:` section so finished
+  #      builds land straight in TestFlight - installable on your iPhone via
+  #      the TestFlight app, still with no Mac required on your side.
+  ios-unsigned-build:
+    name: iOS - unsigned build (no Apple account needed)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install Flutter dependencies
+        script: flutter packages pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Build unsigned iOS app
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+    # Uncomment and add your own email to get notified when a build
+    # finishes (left out by default - not something to fill in on your
+    # behalf):
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - you@example.com
+    #     notify:
+    #       success: true
+    #       failure: true
