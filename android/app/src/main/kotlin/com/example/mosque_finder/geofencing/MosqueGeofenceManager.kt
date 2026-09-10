@@ -87,7 +87,28 @@ class MosqueGeofenceManager(private val context: Context) {
             GeofencePrefs.saveMosques(context, newMosques)
             // Drop any "currently inside" bookkeeping for mosques that fell out of range,
             // so a stale exit event can't fire for a geofence that no longer exists.
-            GeofencePrefs.setInsideIds(context, GeofencePrefs.getInsideIds(context).intersect(incomingIds))
+            val newInsideIds = GeofencePrefs.getInsideIds(context).intersect(incomingIds)
+            GeofencePrefs.setInsideIds(context, newInsideIds)
+
+            // If the mosque that got the phone silenced was just unselected (rather than
+            // physically left), Play services never fires an EXIT for a geofence that's
+            // simply removed - without this, the ringer would stay silent forever with no
+            // transition left to ever restore it.
+            if (GeofencePrefs.isSilencedByApp(context) && newInsideIds.isEmpty()) {
+                GeofencePrefs.setActivePlaceId(context, null)
+                SilentModeManager.restoreRingerMode(context)
+                GeofenceEventBridge.emit(mapOf("type" to "exit", "placeId" to null, "name" to null))
+            } else {
+                val activeId = GeofencePrefs.getActivePlaceId(context)
+                if (activeId != null && activeId !in newInsideIds) {
+                    // Still silenced by another overlapping mosque that's still selected
+                    // and dwelled-in - just re-attribute "the one you're at" rather than
+                    // toggling the ringer again.
+                    val stillActive = newMosques.firstOrNull { it.placeId in newInsideIds }
+                    GeofencePrefs.setActivePlaceId(context, stillActive?.placeId)
+                }
+            }
+
             Log.i(TAG, "Geofences synced: -${toRemove.size} +${toAdd.size}, total=${newMosques.size}")
             callback(toAdd.size, toRemove.size, newMosques.size)
         }
@@ -126,8 +147,17 @@ class MosqueGeofenceManager(private val context: Context) {
 
     fun clearAll(callback: () -> Unit) {
         geofencingClient.removeGeofences(pendingIntent).addOnCompleteListener {
+            // Same reasoning as the removal branch of syncGeofences.finish(): clearing
+            // every geofence never triggers a real EXIT, so restore here if the ringer
+            // was still silenced from a mosque that's about to disappear.
+            val wasSilenced = GeofencePrefs.isSilencedByApp(context)
             GeofencePrefs.saveMosques(context, emptyList())
             GeofencePrefs.setInsideIds(context, emptySet())
+            GeofencePrefs.setActivePlaceId(context, null)
+            if (wasSilenced) {
+                SilentModeManager.restoreRingerMode(context)
+                GeofenceEventBridge.emit(mapOf("type" to "exit", "placeId" to null, "name" to null))
+            }
             Log.i(TAG, "All mosque geofences cleared")
             callback()
         }

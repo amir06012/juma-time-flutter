@@ -72,6 +72,18 @@ class MainActivity : FlutterActivity() {
                     "setAutomationEnabled" -> {
                         val enabled = call.arguments as? Boolean ?: true
                         GeofencePrefs.setAutomationEnabled(applicationContext, enabled)
+                        // Turning automation off is the user's explicit "stop managing my
+                        // ringer" signal. Without this, GeofenceBroadcastReceiver ignores
+                        // every transition while automation is disabled - including the
+                        // real EXIT that would normally restore the ringer - so a phone
+                        // silenced when this switch is flipped off would otherwise stay
+                        // silent indefinitely.
+                        if (!enabled && GeofencePrefs.isSilencedByApp(applicationContext)) {
+                            GeofencePrefs.setInsideIds(applicationContext, emptySet())
+                            GeofencePrefs.setActivePlaceId(applicationContext, null)
+                            SilentModeManager.restoreRingerMode(applicationContext)
+                            GeofenceEventBridge.emit(mapOf("type" to "exit", "placeId" to null, "name" to null))
+                        }
                         result.success(null)
                     }
 

@@ -23,6 +23,16 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
+        // If the device rebooted while the app had the ringer silenced (mid-visit),
+        // Play services' geofences don't survive the restart to ever fire the EXIT that
+        // would normally trigger the restore - do it now instead of leaving the phone
+        // silent indefinitely for a reason the user can no longer see. This also resets
+        // the silenced/saved-ringer-mode bookkeeping itself, so the clears below are
+        // just defensive for the isSilencedByApp == false case.
+        if (GeofencePrefs.isSilencedByApp(context)) {
+            SilentModeManager.restoreRingerMode(context)
+        }
+
         // Ringer/session bookkeeping doesn't carry meaningful information across a
         // reboot (we can't know if the user was mid-visit) - clear it defensively so a
         // later EXIT can't try to "restore" a stale saved ringer mode.
