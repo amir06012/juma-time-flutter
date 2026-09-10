@@ -22,6 +22,13 @@ android {
         jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
+    // AGP 8+ generates BuildConfig only when explicitly enabled - needed so
+    // MainActivity can gate the debug-only silent-mode test harness behind
+    // BuildConfig.DEBUG and have it compiled out of release builds.
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.mosque_finder"

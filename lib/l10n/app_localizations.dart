@@ -482,6 +482,30 @@ abstract class AppLocalizations {
   /// **'Recent activity'**
   String get recentActivity;
 
+  /// No description provided for @ringerModeSilent.
+  ///
+  /// In en, this message translates to:
+  /// **'🔇 Ringer is silent'**
+  String get ringerModeSilent;
+
+  /// No description provided for @ringerModeVibrate.
+  ///
+  /// In en, this message translates to:
+  /// **'📳 Ringer is on vibrate'**
+  String get ringerModeVibrate;
+
+  /// No description provided for @ringerModeNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'🔔 Ringer is on normal'**
+  String get ringerModeNormal;
+
+  /// No description provided for @silencedButRingerNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ You\'re at a selected mosque but the ringer is still on. Check that Do Not Disturb access is still granted.'**
+  String get silencedButRingerNormal;
+
   /// No description provided for @selectMosquesTitle.
   ///
   /// In en, this message translates to:

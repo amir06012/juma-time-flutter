@@ -250,6 +250,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentActivity => 'Recent activity';
 
   @override
+  String get ringerModeSilent => '🔇 Ringer is silent';
+
+  @override
+  String get ringerModeVibrate => '📳 Ringer is on vibrate';
+
+  @override
+  String get ringerModeNormal => '🔔 Ringer is on normal';
+
+  @override
+  String get silencedButRingerNormal =>
+      '⚠️ You\'re at a selected mosque but the ringer is still on. Check that Do Not Disturb access is still granted.';
+
+  @override
   String get selectMosquesTitle => 'Select Mosques';
 
   @override

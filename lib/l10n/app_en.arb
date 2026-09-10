@@ -79,6 +79,10 @@
   "silentModeWatchingCountForMode": "{count, plural, one{Watching {count} selected mosque for silent mode.} other{Watching {count} selected mosques for silent mode.}}",
   "@silentModeWatchingCountForMode": {"placeholders": {"count": {"type": "int"}}},
   "recentActivity": "Recent activity",
+  "ringerModeSilent": "🔇 Ringer is silent",
+  "ringerModeVibrate": "📳 Ringer is on vibrate",
+  "ringerModeNormal": "🔔 Ringer is on normal",
+  "silencedButRingerNormal": "⚠️ You're at a selected mosque but the ringer is still on. Check that Do Not Disturb access is still granted.",
 
   "selectMosquesTitle": "Select Mosques",
   "couldNotLoadNearbyMosques": "Could not load nearby mosques ({error}).",

@@ -70,6 +70,10 @@
   "noMosquesSelectedOff": "कोई मस्जिद चयनित नहीं है - जब तक आप कम से कम एक नहीं चुनते, साइलेंट मोड बंद रहेगा।",
   "silentModeWatchingCountForMode": "{count, plural, one{साइलेंट मोड के लिए {count} चयनित मस्जिद देखी जा रही है।} other{साइलेंट मोड के लिए {count} चयनित मस्जिदें देखी जा रही हैं।}}",
   "recentActivity": "हाल की गतिविधि",
+  "ringerModeSilent": "🔇 रिंगर साइलेंट है",
+  "ringerModeVibrate": "📳 रिंगर वाइब्रेट पर है",
+  "ringerModeNormal": "🔔 रिंगर सामान्य पर है",
+  "silencedButRingerNormal": "⚠️ आप एक चयनित मस्जिद पर हैं लेकिन रिंगर अभी भी चालू है। जांचें कि डू नॉट डिस्टर्ब एक्सेस अभी भी दिया गया है या नहीं।",
 
   "selectMosquesTitle": "मस्जिदें चुनें",
   "couldNotLoadNearbyMosques": "आस-पास की मस्जिदें लोड नहीं हो सकीं ({error})।",

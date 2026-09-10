@@ -108,7 +108,12 @@ class _AddJummahSheetState extends State<AddJummahSheet> {
         left: 20,
         right: 20,
         top: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        // viewInsets.bottom clears the keyboard; padding.bottom clears the
+        // system nav bar (e.g. the on-screen 3-button bar on older phones),
+        // otherwise the Save button ends up hidden behind it.
+        bottom: MediaQuery.of(context).viewInsets.bottom +
+            MediaQuery.of(context).padding.bottom +
+            20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

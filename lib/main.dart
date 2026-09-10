@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -29,8 +31,19 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    // Anonymous sign-in is a network round-trip (Firebase Auth REST call),
+    // which on a slow connection can take seconds - awaiting it here held
+    // up runApp() and kept the native splash icon on screen the whole time.
+    // It's only needed for submitting a Jummah time, which happens well
+    // after startup, so let it complete in the background instead.
     if (FirebaseAuth.instance.currentUser == null) {
-      await FirebaseAuth.instance.signInAnonymously();
+      unawaited(() async {
+        try {
+          await FirebaseAuth.instance.signInAnonymously();
+        } catch (e) {
+          debugPrint('Anonymous sign-in failed: $e');
+        }
+      }());
     }
   } catch (e) {
     debugPrint('Firebase unavailable, continuing without it: $e');

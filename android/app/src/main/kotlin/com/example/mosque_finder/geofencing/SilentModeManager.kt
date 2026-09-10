@@ -53,6 +53,10 @@ object SilentModeManager {
         }
         GeofencePrefs.setSilencedByApp(context, false)
         GeofencePrefs.setSavedRingerMode(context, -1)
-        NotificationHelper.clearActiveMosqueNotification(context)
+        // Confirms the restore rather than just clearing the "active" notification -
+        // a silently-vanishing notification wouldn't tell the user whether the ringer
+        // actually came back or restoring it merely failed (e.g. saved == -1 above, or
+        // DND access got revoked mid-visit).
+        NotificationHelper.showRestoredNotification(context)
     }
 }

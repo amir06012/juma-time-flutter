@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native-side strings for the mosque silent-mode notifications. These are posted
+     from GeofenceBroadcastReceiver/SilentModeManager, which can run with the Flutter
+     engine not alive at all, so they can't come from the Dart l10n (ARB) files - Android
+     resource qualifiers (values-hi/) are the equivalent mechanism on this side. -->
+<resources>
+    <string name="notif_channel_name">Mosque silent mode</string>
+    <string name="notif_channel_desc">Shown while your ringer is automatically silenced near a mosque</string>
+
+    <string name="notif_active_title">Silent mode active</string>
+    <string name="notif_active_text_named">Ringer silenced near %1$s</string>
+    <string name="notif_active_text_generic">Ringer silenced near a mosque</string>
+
+    <string name="notif_restored_title">Silent mode ended</string>
+    <string name="notif_restored_text">Ringer restored to normal</string>
+
+    <string name="notif_permission_title">Can\'t enable silent mode</string>
+    <string name="notif_permission_text">Grant Do Not Disturb access so Juma Time can silence your ringer automatically</string>
+</resources>

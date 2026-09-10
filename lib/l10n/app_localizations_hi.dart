@@ -251,6 +251,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get recentActivity => 'हाल की गतिविधि';
 
   @override
+  String get ringerModeSilent => '🔇 रिंगर साइलेंट है';
+
+  @override
+  String get ringerModeVibrate => '📳 रिंगर वाइब्रेट पर है';
+
+  @override
+  String get ringerModeNormal => '🔔 रिंगर सामान्य पर है';
+
+  @override
+  String get silencedButRingerNormal =>
+      '⚠️ आप एक चयनित मस्जिद पर हैं लेकिन रिंगर अभी भी चालू है। जांचें कि डू नॉट डिस्टर्ब एक्सेस अभी भी दिया गया है या नहीं।';
+
+  @override
   String get selectMosquesTitle => 'मस्जिदें चुनें';
 
   @override

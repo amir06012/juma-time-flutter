@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -39,9 +40,19 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
   bool _automationEnabled = true;
   int _mosqueCount = 0;
   Map<String, String>? _activeMosque;
+  // 'silent' | 'vibrate' | 'normal' - the phone's actual ringer state, read
+  // live from AudioManager rather than assumed from _activeMosque, so this
+  // screen can answer "is my phone actually silent right now" even when
+  // silencing quietly failed (e.g. DND access got revoked).
+  String _ringerMode = 'normal';
   bool _busy = false;
   String? _statusMessage;
   final List<String> _log = [];
+
+  // Polls the real ringer state while this screen is open, so the user
+  // watching it after walking into a mosque sees the answer update within
+  // a few seconds instead of only on manual pull-to-refresh or app resume.
+  Timer? _pollTimer;
 
   // Set right before sending the user to the OS Settings app for a
   // permission with no in-app request dialog (Do Not Disturb access, or a
@@ -57,12 +68,14 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
     WidgetsBinding.instance.addObserver(this);
     _sub = _service.events.listen(_onEvent);
     _refreshStatus();
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _refreshStatus());
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
+    _pollTimer?.cancel();
     super.dispose();
   }
 
@@ -98,12 +111,14 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
       _service.isAutomationEnabled(),
       _service.getRegisteredMosqueCount(),
       _service.getActiveMosque(),
+      _service.getRingerMode(),
     ]);
     if (!mounted) return;
     setState(() {
       _automationEnabled = results[0] as bool;
       _mosqueCount = results[1] as int;
       _activeMosque = results[2] as Map<String, String>?;
+      _ringerMode = results[3] as String;
     });
   }
 
@@ -281,6 +296,37 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
     await _refreshStatus();
   }
 
+  // Debug-build-only test harness (see SilentModeService.debugSimulateEnter)
+  // - lets the silencing mechanics be verified from inside the app, without
+  // mock GPS or the real 90s dwell delay. The native side also refuses
+  // these outside a debug build, this flag just keeps the button itself
+  // out of release UI entirely.
+  bool _debugBusy = false;
+
+  Future<void> _debugEnter() async {
+    setState(() => _debugBusy = true);
+    final mosque = await _service.debugSimulateEnter();
+    if (!mounted) return;
+    setState(() {
+      _debugBusy = false;
+      _statusMessage = mosque == null
+          ? 'Simulate entry failed - select at least one mosque first.'
+          : 'Simulated entering ${mosque['name']}.';
+    });
+    await _refreshStatus();
+  }
+
+  Future<void> _debugExit() async {
+    setState(() => _debugBusy = true);
+    await _service.debugSimulateExit();
+    if (!mounted) return;
+    setState(() {
+      _debugBusy = false;
+      _statusMessage = 'Simulated exiting the mosque.';
+    });
+    await _refreshStatus();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -318,6 +364,33 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
                           : l10n.silentModeWatchingCount(_mosqueCount),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      switch (_ringerMode) {
+                        'silent' => l10n.ringerModeSilent,
+                        'vibrate' => l10n.ringerModeVibrate,
+                        _ => l10n.ringerModeNormal,
+                      },
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: _ringerMode == 'normal' ? null : AppColors.mehndiGreen,
+                          ),
+                    ),
+                    // Surfaced only when the app's belief and the phone's
+                    // actual ringer disagree - e.g. DND access was revoked
+                    // after silencing kicked in, so the ringer silently
+                    // stayed on. Otherwise this card would keep claiming
+                    // "silenced" while the phone rings.
+                    if (_activeMosque != null && _ringerMode == 'normal') ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.silencedButRingerNormal,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: Theme.of(context).colorScheme.error),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -348,6 +421,43 @@ class _SilentModeScreenState extends State<SilentModeScreen> with WidgetsBinding
               const SizedBox(height: 24),
               Text(l10n.recentActivity, style: Theme.of(context).textTheme.titleSmall),
               ..._log.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text(e))),
+            ],
+            // Debug builds only (kDebugMode is a compile-time constant, so
+            // this whole block is tree-shaken out of release/profile
+            // builds) - simulates entering/exiting the nearest registered
+            // mosque without needing mock GPS or the real dwell delay, to
+            // test permissions/DND/AudioManager/notifications in isolation
+            // from actual location detection.
+            if (kDebugMode) ...[
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 8),
+              Text('🧪 Debug test harness', style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 4),
+              Text(
+                'Simulates a real geofence transition (silencing, notification, '
+                'state) on the nearest selected mosque - does not test actual '
+                'location detection.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _debugBusy ? null : _debugEnter,
+                      child: const Text('Simulate enter'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _debugBusy ? null : _debugExit,
+                      child: const Text('Simulate exit'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),

@@ -123,6 +123,21 @@ class SilentModeService {
     }
   }
 
+  /// The phone's actual current ringer mode - `'silent'`, `'vibrate'`, or
+  /// `'normal'` - read live from AudioManager rather than assumed from
+  /// geofence state. That state can lie (DND access revoked after the fact,
+  /// or the user flipping the ringer back manually), so this is the only
+  /// way to show the user ground truth instead of just "we think you're at
+  /// a mosque".
+  Future<String> getRingerMode() async {
+    try {
+      return await _methodChannel.invokeMethod<String>('getRingerMode') ?? 'normal';
+    } on PlatformException catch (e) {
+      debugPrint('getRingerMode failed: $e');
+      return 'normal';
+    }
+  }
+
   /// The mosque currently attributed as "the one you're at", or null.
   Future<Map<String, String>?> getActiveMosque() async {
     try {
@@ -195,6 +210,43 @@ class SilentModeService {
     } on PlatformException catch (e) {
       debugPrint('registerGeofences failed: $e');
       return SyncResult(added: 0, removed: 0, total: 0, error: e.message ?? e.code);
+    }
+  }
+
+  /// Debug-only: drives the exact same native code path a real DWELL
+  /// transition would (silencing + prefs bookkeeping + the same event this
+  /// service's [events] stream emits for a real one), without needing mock
+  /// GPS or the 90s loiter delay. Requires at least one mosque already
+  /// selected via [syncSelectedMosques]. Returns the mosque it simulated
+  /// entering, or null on failure (see debugPrint for why - no mosque
+  /// selected, or this was somehow called from a release build where the
+  /// native side refuses it).
+  ///
+  /// This only proves the silencing mechanics work (permissions, DND,
+  /// AudioManager, notifications) - it can't simulate Play Services' own
+  /// location evaluation, so it's not a substitute for a real or
+  /// mock-location device test of detection itself.
+  Future<Map<String, String>?> debugSimulateEnter() async {
+    try {
+      final result = await _methodChannel.invokeMapMethod<String, dynamic>('debugSimulateEnter');
+      if (result == null) return null;
+      return {
+        'placeId': result['placeId'] as String? ?? '',
+        'name': result['name'] as String? ?? '',
+      };
+    } on PlatformException catch (e) {
+      debugPrint('debugSimulateEnter failed: $e');
+      return null;
+    }
+  }
+
+  /// Debug-only counterpart to [debugSimulateEnter] - simulates the EXIT
+  /// transition (restores the ringer, clears active-mosque state).
+  Future<void> debugSimulateExit() async {
+    try {
+      await _methodChannel.invokeMethod('debugSimulateExit');
+    } on PlatformException catch (e) {
+      debugPrint('debugSimulateExit failed: $e');
     }
   }
 

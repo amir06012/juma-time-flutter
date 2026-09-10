@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notif_channel_name">मस्जिद साइलेंट मोड</string>
+    <string name="notif_channel_desc">मस्जिद के पास आपकी रिंगर अपने आप साइलेंट होने पर दिखाया जाता है</string>
+
+    <string name="notif_active_title">साइलेंट मोड सक्रिय</string>
+    <string name="notif_active_text_named">%1$s के पास रिंगर साइलेंट है</string>
+    <string name="notif_active_text_generic">मस्जिद के पास रिंगर साइलेंट है</string>
+
+    <string name="notif_restored_title">साइलेंट मोड समाप्त</string>
+    <string name="notif_restored_text">रिंगर सामान्य पर वापस आ गया</string>
+
+    <string name="notif_permission_title">साइलेंट मोड सक्षम नहीं किया जा सका</string>
+    <string name="notif_permission_text">Juma Time को आपकी रिंगर अपने आप साइलेंट करने के लिए डू नॉट डिस्टर्ब एक्सेस दें</string>
+</resources>

@@ -12,6 +12,7 @@ import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.mosque_finder.R
 
 /** Builds/updates/clears the small status notifications for this feature. */
 object NotificationHelper {
@@ -25,10 +26,10 @@ object NotificationHelper {
             if (manager.getNotificationChannel(CHANNEL_ID) == null) {
                 val channel = NotificationChannel(
                     CHANNEL_ID,
-                    "Mosque silent mode",
+                    context.getString(R.string.notif_channel_name),
                     NotificationManager.IMPORTANCE_LOW,
                 ).apply {
-                    description = "Shown while your ringer is automatically silenced near a mosque"
+                    description = context.getString(R.string.notif_channel_desc)
                 }
                 manager.createNotificationChannel(channel)
             }
@@ -41,13 +42,18 @@ object NotificationHelper {
             PackageManager.PERMISSION_GRANTED
     }
 
+    /** Posted the moment the ringer actually goes silent - ongoing (can't be swiped
+     *  away) so it stays as visible, standing proof of *why* the phone is quiet for as
+     *  long as it stays that way, not just a one-off toast the user might miss. */
     fun showActiveMosqueNotification(context: Context, mosque: MosqueGeofence?) {
         if (!canPostNotifications(context)) return
         ensureChannel(context)
+        val text = mosque?.let { context.getString(R.string.notif_active_text_named, it.name) }
+            ?: context.getString(R.string.notif_active_text_generic)
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_silent_mode)
-            .setContentTitle("Silent mode active")
-            .setContentText(mosque?.let { "Ringer silenced near ${it.name}" } ?: "Ringer silenced near a mosque")
+            .setContentTitle(context.getString(R.string.notif_active_title))
+            .setContentText(text)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -57,6 +63,24 @@ object NotificationHelper {
 
     fun clearActiveMosqueNotification(context: Context) {
         NotificationManagerCompat.from(context).cancel(ACTIVE_NOTIFICATION_ID)
+    }
+
+    /** Posted on exit, replacing the ongoing "active" notification (same id) with a
+     *  brief, dismissible confirmation that the ringer is back to normal - without
+     *  this the user only sees the silent-mode notification vanish, with nothing
+     *  telling them the ringer was actually restored rather than, say, still silent
+     *  because restoring it failed. */
+    fun showRestoredNotification(context: Context) {
+        if (!canPostNotifications(context)) return
+        ensureChannel(context)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_lock_silent_mode)
+            .setContentTitle(context.getString(R.string.notif_restored_title))
+            .setContentText(context.getString(R.string.notif_restored_text))
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+        NotificationManagerCompat.from(context).notify(ACTIVE_NOTIFICATION_ID, notification)
     }
 
     fun showPermissionNeededNotification(context: Context) {
@@ -72,8 +96,8 @@ object NotificationHelper {
         )
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_silent_mode)
-            .setContentTitle("Can't enable silent mode")
-            .setContentText("Grant Do Not Disturb access so Mosque Finder can silence your ringer automatically")
+            .setContentTitle(context.getString(R.string.notif_permission_title))
+            .setContentText(context.getString(R.string.notif_permission_text))
             .setContentIntent(contentIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
